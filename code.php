@@ -8,7 +8,7 @@
 require 'dbcon.php';
 
 if (isset($_POST['save_student'])) {
-   
+
 
     $name = trim(mysqli_real_escape_string($con, $_POST['name']));
     $email = trim(mysqli_real_escape_string($con, $_POST['email']));
@@ -16,7 +16,7 @@ if (isset($_POST['save_student'])) {
     $course = trim(mysqli_real_escape_string($con, $_POST['course']));
 
 
-    $check_name_query = "SELECT * FROM students WHERE name='$name'";
+    $check_name_query = "SELECT * FROM students WHERE name='$name' and  is_deleted = '0'";
     $check_name_result = mysqli_query($con, $check_name_query);
     if (mysqli_num_rows($check_name_result) > 0) {
         $res = [
@@ -28,7 +28,7 @@ if (isset($_POST['save_student'])) {
     }
 
 
-    $check_email_query = "SELECT * FROM students WHERE email='$email'";
+    $check_email_query = "SELECT * FROM students WHERE email='$email' and  is_deleted = '0'";
     $check_email_result = mysqli_query($con, $check_email_query);
     if (mysqli_num_rows($check_email_result) > 0) {
         $res = [
@@ -40,7 +40,7 @@ if (isset($_POST['save_student'])) {
     }
 
 
-    $check_phone_query = "SELECT * FROM students WHERE phone='$phone'";
+    $check_phone_query = "SELECT * FROM students WHERE phone='$phone' and  is_deleted = '0'";
     $check_phone_result = mysqli_query($con, $check_phone_query);
     if (mysqli_num_rows($check_phone_result) > 0) {
         $res = [
@@ -78,7 +78,7 @@ if (isset($_POST['save_student'])) {
         return;
     }
 
-    if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $res = [
             'status' => 422,
             'message' => 'Invalid email format'
@@ -105,7 +105,7 @@ if (isset($_POST['save_student'])) {
         ];
         echo json_encode($res);
         return;
-    }else if (strlen($phone) != 10) {
+    } else if (strlen($phone) != 10) {
         $res = [
             'status' => 422,
             'message' => 'Phone number must be 10 digits long'
@@ -113,7 +113,7 @@ if (isset($_POST['save_student'])) {
         echo json_encode($res);
         return;
     }
-    
+
     if (!ctype_digit($phone)) {
         $res = [
             'status' => 422,
@@ -121,9 +121,7 @@ if (isset($_POST['save_student'])) {
         ];
         echo json_encode($res);
         return;
-    }
-
-    else if (substr($phone, 0, 2) !== "02" && substr($phone, 0, 2) !== "05") {
+    } else if (substr($phone, 0, 2) !== "02" && substr($phone, 0, 2) !== "05") {
         $res = [
             'status' => 422,
             'message' => 'Phone number must start with 02 or 05'
@@ -131,8 +129,8 @@ if (isset($_POST['save_student'])) {
         echo json_encode($res);
         return;
     }
-    
-    
+
+
 
 
     if ($course == NULL) {
@@ -182,8 +180,8 @@ if (isset($_POST['update_student'])) {
         return;
     }
 
-   
-    if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $res = [
             'status' => 422,
             'message' => 'Invalid email format'
@@ -210,15 +208,15 @@ if (isset($_POST['update_student'])) {
         ];
         echo json_encode($res);
         return;
-    }else if (strlen($phone) != 10) {
+    } else if (strlen($phone) != 10) {
         $res = [
             'status' => 422,
             'message' => 'Phone number must be 10 digits long'
         ];
         echo json_encode($res);
         return;
-    } 
-    
+    }
+
     if (!ctype_digit($phone)) {
         $res = [
             'status' => 422,
@@ -226,8 +224,7 @@ if (isset($_POST['update_student'])) {
         ];
         echo json_encode($res);
         return;
-    }
-    else if (substr($phone, 0, 2) !== "02" && substr($phone, 0, 2) !== "05") {
+    } else if (substr($phone, 0, 2) !== "02" && substr($phone, 0, 2) !== "05") {
         $res = [
             'status' => 422,
             'message' => 'Phone number must start with 02 or 05'
@@ -235,8 +232,8 @@ if (isset($_POST['update_student'])) {
         echo json_encode($res);
         return;
     }
-    
-    
+
+
 
 
     if ($course == NULL) {
@@ -250,7 +247,7 @@ if (isset($_POST['update_student'])) {
 
 
 
-    $check_name_query = "SELECT * FROM students WHERE name='$name' AND id != '$student_id'";
+    $check_name_query = "SELECT * FROM students WHERE name='$name' AND id != '$student_id' and  is_deleted = '0'";
     $check_name_result = mysqli_query($con, $check_name_query);
     if (mysqli_num_rows($check_name_result) > 0) {
         $res = [
@@ -262,7 +259,7 @@ if (isset($_POST['update_student'])) {
     }
 
 
-    $check_email_query = "SELECT * FROM students WHERE email='$email' AND id != '$student_id'";
+    $check_email_query = "SELECT * FROM students WHERE email='$email' AND id != '$student_id' and  is_deleted = '0'";
     $check_email_result = mysqli_query($con, $check_email_query);
     if (mysqli_num_rows($check_email_result) > 0) {
         $res = [
@@ -274,7 +271,7 @@ if (isset($_POST['update_student'])) {
     }
 
 
-    $check_phone_query = "SELECT * FROM students WHERE phone='$phone' AND id != '$student_id'";
+    $check_phone_query = "SELECT * FROM students WHERE phone='$phone' AND id != '$student_id' and  is_deleted = '0'";
     $check_phone_result = mysqli_query($con, $check_phone_query);
     if (mysqli_num_rows($check_phone_result) > 0) {
         $res = [
@@ -289,7 +286,7 @@ if (isset($_POST['update_student'])) {
 
 
     $query = "UPDATE students SET name='$name', email='$email', phone='$phone', course='$course' 
-                WHERE id='$student_id'";
+                WHERE id='$student_id' and  is_deleted = '0'";
     $query_run = mysqli_query($con, $query);
 
     if ($query_run) {
@@ -313,7 +310,7 @@ if (isset($_POST['update_student'])) {
 if (isset($_GET['student_id'])) {
     $student_id = mysqli_real_escape_string($con, $_GET['student_id']);
 
-    $query = "SELECT * FROM students WHERE id='$student_id'";
+    $query = "SELECT * FROM students WHERE id='$student_id' and is_deleted = '0'";
     $query_run = mysqli_query($con, $query);
 
     if (mysqli_num_rows($query_run) == 1) {
@@ -339,8 +336,11 @@ if (isset($_GET['student_id'])) {
 if (isset($_POST['delete_student'])) {
     $student_id = mysqli_real_escape_string($con, $_POST['student_id']);
 
-    $query = "DELETE FROM students WHERE id='$student_id'";
-    $query_run = mysqli_query($con, $query);
+    // $query = "DELETE FROM students WHERE id='$student_id' and is_deleted = '0'";
+    // $query_run = mysqli_query($con, $query);
+
+    $sql = "UPDATE students SET is_deleted = 1 WHERE id = $student_id";
+    $query_run = $con->query($sql);
 
     if ($query_run) {
         $res = [

@@ -159,7 +159,7 @@
                 <?php
                 require 'dbcon.php';
 
-                $query = "SELECT * FROM students";
+                $query = "SELECT * FROM students where is_deleted = '0'";
                 $query_run = mysqli_query($con, $query);
 
                 if (mysqli_num_rows($query_run) > 0) {
