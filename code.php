@@ -9,16 +9,31 @@ require 'dbcon.php';
 
 if (isset($_POST['save_student'])) {
 
-    // Fetch the last used index
-    $index_query = "SELECT IndexNumber FROM students ORDER BY IndexNumber DESC LIMIT 1";
+
+    
+
+
+
+    
+    $currentYear = date('y');
+    $prefix = 'REG' . $currentYear;
+
+   
+    $index_query = "SELECT IndexNumber FROM students WHERE IndexNumber LIKE '$prefix%' ORDER BY IndexNumber DESC LIMIT 1";
     $index_result = mysqli_query($con, $index_query);
     $row = mysqli_fetch_assoc($index_result);
 
-    // If there are no students yet, start from the default value
-    $lastIndex = isset($row['IndexNumber']) ? $row['IndexNumber'] : '0322080100';
+    if (isset($row['IndexNumber'])) {
+      
+        $numericPart = (int)substr($row['IndexNumber'], strlen($prefix));
+       
+        $nextNumber = $numericPart + 1;
+    } else {
+        
+        $nextNumber = 1;
+    }
 
-    // Increment the index (convert to integer, increment, then format back to string)
-    $newIndex = str_pad((int)$lastIndex + 1, 10, '0', STR_PAD_LEFT);
+    $newIndex = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
 
 
     $name = trim(mysqli_real_escape_string($con, $_POST['name']));
@@ -139,7 +154,7 @@ if (isset($_POST['save_student'])) {
         return;
     }
 
-    
+
 
     $query = "INSERT INTO students (name,email,phone,course,IndexNumber) VALUES ('$name','$email','$phone','$course', '$newIndex')";
     $query_run = mysqli_query($con, $query);
