@@ -27,7 +27,7 @@
         <form id="saveStudent">
           <div class="modal-body">
 
-            <div id="errorMessage" class="alert alert-warning d-none"></div>
+            <!-- <div id="errorMessage" class="alert alert-warning d-none"></div> -->
 
             <div class="mb-3">
               <label for="">Name</label>
@@ -45,6 +45,10 @@
               <label for="">Course</label>
               <input type="text" name="course" class="form-control" />
             </div>
+            <div class="mb-3">
+              <input type="hidden" name="IndexNumber" value="" />
+            </div>
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -137,7 +141,7 @@
           <div class="card-header">
             <h4>PHP Ajax CRUD without page reload using Bootstrap Modal
 
-              <button type="button" class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#studentAddModal">
+              <button type="button" class="btn btn-primary addNewStudent float-end" data-bs-toggle="modal" data-bs-target="#studentAddModal">
                 Add Student
               </button>
             </h4>
@@ -152,6 +156,7 @@
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Course</th>
+                  <th>Index Number</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -171,6 +176,8 @@
                       <td><?= $student['email'] ?></td>
                       <td><?= $student['phone'] ?></td>
                       <td><?= $student['course'] ?></td>
+                      <td><?= $student['IndexNumber'] ?></td>
+
                       <td>
                         <button type="button" value="<?= $student['id']; ?>" class="viewStudentBtn btn btn-info btn-sm">View</button>
                         <button type="button" value="<?= $student['id']; ?>" class="editStudentBtn btn btn-success btn-sm">Edit</button>
@@ -196,6 +203,32 @@
 
   <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <!-- <script>
+    let currentIndex = 223344510;
+
+    function generateStudentIndex() {
+      currentIndex++;
+      const formattedIndex = String(currentIndex).padStart(10, '0');
+      return formattedIndex;
+    }
+
+    function addNewStudent() {
+      const newStudentIndex = generateStudentIndex();
+      return newStudentIndex;
+    }
+
+   
+    $(document).on('click', '.addNewStudent', function() {
+      const newIndex = addNewStudent(); 
+      $('input[name="IndexNumber"]').val(newIndex);
+    }); 
+
+  </script> -->
+
+
+ 
+
   <script>
     $(document).on('submit', '#saveStudent', function(e) {
       e.preventDefault();
@@ -247,6 +280,8 @@
       })
     });
 
+
+
     $(document).on('click', '.editStudentBtn', function() {
 
       var student_id = $(this).val();
@@ -286,40 +321,40 @@
         dangerMode: true,
       }).then((willAdd) => {
         if (willAdd) {
-      var formData = new FormData(this);
-      formData.append("update_student", true);
+          var formData = new FormData(this);
+          formData.append("update_student", true);
 
-      $.ajax({
-        type: "POST",
-        url: "code.php",
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
+          $.ajax({
+            type: "POST",
+            url: "code.php",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
 
-          var res = jQuery.parseJSON(response);
-          if (res.status == 422) {
-            // $('#errorMessageUpdate').removeClass('d-none');
-            // $('#errorMessageUpdate').text(res.message);
-            swal("Error!", res.message, "error");
+              var res = jQuery.parseJSON(response);
+              if (res.status == 422) {
+                // $('#errorMessageUpdate').removeClass('d-none');
+                // $('#errorMessageUpdate').text(res.message);
+                swal("Error!", res.message, "error");
 
-          } else if (res.status == 200) {
+              } else if (res.status == 200) {
 
-            $('#errorMessageUpdate').addClass('d-none');
+                $('#errorMessageUpdate').addClass('d-none');
 
-            swal("Success!", res.message, "success");
-            $('#studentEditModal').modal('hide');
-            $('#updateStudent')[0].reset();
+                swal("Success!", res.message, "success");
+                $('#studentEditModal').modal('hide');
+                $('#updateStudent')[0].reset();
 
-            $('#myTable').load(location.href + " #myTable");
+                $('#myTable').load(location.href + " #myTable");
 
-          } else if (res.status == 500) {
-            alert(res.message);
-          }
+              } else if (res.status == 500) {
+                alert(res.message);
+              }
+            }
+          });
         }
-      });
-    }
-  })
+      })
     });
 
     $(document).on('click', '.viewStudentBtn', function() {

@@ -9,11 +9,24 @@ require 'dbcon.php';
 
 if (isset($_POST['save_student'])) {
 
+    // Fetch the last used index
+    $index_query = "SELECT IndexNumber FROM students ORDER BY IndexNumber DESC LIMIT 1";
+    $index_result = mysqli_query($con, $index_query);
+    $row = mysqli_fetch_assoc($index_result);
+
+    // If there are no students yet, start from the default value
+    $lastIndex = isset($row['IndexNumber']) ? $row['IndexNumber'] : '0322080100';
+
+    // Increment the index (convert to integer, increment, then format back to string)
+    $newIndex = str_pad((int)$lastIndex + 1, 10, '0', STR_PAD_LEFT);
+
 
     $name = trim(mysqli_real_escape_string($con, $_POST['name']));
     $email = trim(mysqli_real_escape_string($con, $_POST['email']));
     $phone = trim(mysqli_real_escape_string($con, $_POST['phone']));
     $course = trim(mysqli_real_escape_string($con, $_POST['course']));
+    $IndexNumber = mysqli_real_escape_string($con, $_POST['IndexNumber']);
+
 
 
     $check_name_query = "SELECT * FROM students WHERE name='$name' and  is_deleted = '0'";
@@ -50,22 +63,6 @@ if (isset($_POST['save_student'])) {
         echo json_encode($res);
         return;
     }
-
-
-    // $check_course_query = "SELECT * FROM students WHERE course='$course'";
-    // $check_course_result = mysqli_query($con, $check_course_query);
-    // if (mysqli_num_rows($check_course_result) > 0) {
-    //     $res = [
-    //         'status' => 422,
-    //         'message' => 'Course already exists'
-    //     ];
-    //     echo json_encode($res);
-    //     return;
-    // }
-
-
-
-
 
 
 
@@ -142,7 +139,9 @@ if (isset($_POST['save_student'])) {
         return;
     }
 
-    $query = "INSERT INTO students (name,email,phone,course) VALUES ('$name','$email','$phone','$course')";
+    
+
+    $query = "INSERT INTO students (name,email,phone,course,IndexNumber) VALUES ('$name','$email','$phone','$course', '$newIndex')";
     $query_run = mysqli_query($con, $query);
 
     if ($query_run) {
