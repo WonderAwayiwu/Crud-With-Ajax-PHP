@@ -24,11 +24,8 @@
           <h5 class="modal-title" id="exampleModalLabel">Add Student</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form id="saveStudent">
+        <form id="saveStudent" enctype="multipart/form-data">
           <div class="modal-body">
-
-            <!-- <div id="errorMessage" class="alert alert-warning d-none"></div> -->
-
             <div class="mb-3">
               <label for="">Name</label>
               <input type="text" name="name" class="form-control" />
@@ -44,6 +41,11 @@
             <div class="mb-3">
               <label for="">Course</label>
               <input type="text" name="course" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="student_image">Student Image</label>
+              <input type="file" name="student_image" class="form-control" accept=".png, .jpeg, .jpg" />
+              <small class="form-text text-muted">Upload a profile image (JPG, PNG)</small>
             </div>
             <div class="mb-3">
               <input type="hidden" name="IndexNumber" value="" />
@@ -67,7 +69,7 @@
           <h5 class="modal-title" id="exampleModalLabel">Edit Student</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form id="updateStudent">
+        <form id="updateStudent" enctype="multipart/form-data">
           <div class="modal-body">
 
             <div id="errorMessageUpdate" class="alert alert-warning d-none"></div>
@@ -90,6 +92,15 @@
               <label for="">Course</label>
               <input type="text" name="course" id="course" class="form-control" />
             </div>
+            <div class="mb-3">
+              <label for="student_image">Student Image</label>
+              <input type="file" name="student_image" class="form-control" accept=".png, .jpeg, .jpg" />
+              <small class="form-text text-muted">Upload a new image or leave empty to keep current image</small>
+              <div id="current_image_container" class="mt-2">
+
+              </div>
+            </div>
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -126,6 +137,11 @@
             <label for="">Course</label>
             <p id="view_course" class="form-control"></p>
           </div>
+          <div class="mb-3">
+            <label>Student Image</label>
+            <div id="view_image" class="form-control" style="min-height: 100px;"></div>
+          </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -151,12 +167,12 @@
             <table id="myTable" class="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th>#</th>
+                  <th>Index Number</th>
                   <th>Name</th>
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Course</th>
-                  <th>Index Number</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -171,12 +187,18 @@
                   foreach ($query_run as $student) {
                 ?>
                     <tr>
-                      <td><?= $student['id'] ?></td>
-                      <td><?= $student['name'] ?></td>
+                      <td><?= $index = isset($index) ? $index + 1 : 1 ?></td>
+                      <td><?= $student['IndexNumber'] ?></td>
+                      <td><?php if (!empty($student['image'])): ?>
+                          <img src="uploads/<?= $student['image'] ?>" width="50" height="50" class="rounded-circle" onerror="this.src='uploads/no-image.jpg'">
+                        <?php else: ?>
+                          <img src="uploads/no-image.jpg" width="50" height="50" class="rounded-circle">
+                          <?php endif; ?><?= $student['name'] ?>
+                      </td>
                       <td><?= $student['email'] ?></td>
                       <td><?= $student['phone'] ?></td>
                       <td><?= $student['course'] ?></td>
-                      <td><?= $student['IndexNumber'] ?></td>
+
 
                       <td>
                         <button type="button" value="<?= $student['id']; ?>" class="viewStudentBtn btn btn-info btn-sm">View</button>
@@ -204,9 +226,9 @@
   <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-  
 
- 
+
+
 
   <script>
     $(document).on('submit', '#saveStudent', function(e) {
@@ -282,6 +304,12 @@
             $('#phone').val(res.data.phone);
             $('#course').val(res.data.course);
 
+            if (res.data.image) {
+              $('#current_image_container').html('<p>Current image:</p><img src="uploads/' + res.data.image + '" class="img-fluid rounded" style="max-height: 100px;">');
+            } else {
+              $('#current_image_container').html('<p>No current image</p>');
+            }
+
             $('#studentEditModal').modal('show');
           }
 
@@ -354,6 +382,12 @@
             $('#view_email').text(res.data.email);
             $('#view_phone').text(res.data.phone);
             $('#view_course').text(res.data.course);
+
+            if (res.data.image) {
+              $('#view_image').html('<img src="uploads/' + res.data.image + '" class="img-fluid rounded" style="max-height: 200px;">');
+            } else {
+              $('#view_image').html('<p>No image available</p>');
+            }
 
             $('#studentViewModal').modal('show');
           }

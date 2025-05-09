@@ -1,35 +1,81 @@
 <?php
 
-
-
-
-
-
 require 'dbcon.php';
 
 if (isset($_POST['save_student'])) {
 
+    $image_name = null;
+    if (isset($_FILES['student_image']) && $_FILES['student_image']['error'] == 0) {
 
-    
+        $file_name = $_FILES['student_image']['name'];
+        $file_size = $_FILES['student_image']['size'];
+        $file_tmp = $_FILES['student_image']['tmp_name'];
+        $file_type = $_FILES['student_image']['type'];
+
+
+        $file_ext_array = explode('.', $file_name);
+        $file_ext = strtolower(end($file_ext_array));
+
+
+        $allowed_extensions = array("jpg", "jpeg", "png");
+
+
+        if (in_array($file_ext, $allowed_extensions)) {
+            //validate file sizse not more that 2MB
+            if ($file_size <= 2000000) {
+
+                $image_name = "student_" . time() . "_" . rand(1000, 9999) . "." . $file_ext;
+                $upload_path = "uploads/" . $image_name;
+
+
+                if (!move_uploaded_file($file_tmp, $upload_path)) {
+                    $res = [
+                        'status' => 422,
+                        'message' => 'Failed to upload image'
+                    ];
+                    echo json_encode($res);
+                    return;
+                }
+            } else {
+                $res = [
+                    'status' => 422,
+                    'message' => 'Image size should be less than 2MB'
+                ];
+                echo json_encode($res);
+                return;
+            }
+        } else {
+            $res = [
+                'status' => 422,
+                'message' => 'Only JPG, JPEG and PNG files are allowed'
+            ];
+            echo json_encode($res);
+            return;
+        }
+    }
 
 
 
-    
+
+
+
+
+
     $currentYear = date('y');
     $prefix = 'REG' . $currentYear;
 
-   
+
     $index_query = "SELECT IndexNumber FROM students WHERE IndexNumber LIKE '$prefix%' ORDER BY IndexNumber DESC LIMIT 1";
     $index_result = mysqli_query($con, $index_query);
     $row = mysqli_fetch_assoc($index_result);
 
     if (isset($row['IndexNumber'])) {
-      
+
         $numericPart = (int)substr($row['IndexNumber'], strlen($prefix));
-       
+
         $nextNumber = $numericPart + 1;
     } else {
-        
+
         $nextNumber = 1;
     }
 
@@ -156,7 +202,9 @@ if (isset($_POST['save_student'])) {
 
 
 
-    $query = "INSERT INTO students (name,email,phone,course,IndexNumber) VALUES ('$name','$email','$phone','$course', '$newIndex')";
+    $query = "INSERT INTO students (name, email, phone, course, IndexNumber, image) 
+          VALUES ('$name', '$email', '$phone', '$course', '$newIndex', '$image_name')";
+
     $query_run = mysqli_query($con, $query);
 
     if ($query_run) {
@@ -178,7 +226,80 @@ if (isset($_POST['save_student'])) {
 
 
 if (isset($_POST['update_student'])) {
+
     $student_id = mysqli_real_escape_string($con, $_POST['student_id']);
+
+    $image_update = "";
+    if (isset($_FILES['student_image']) && $_FILES['student_image']['error'] == 0) {
+
+        $file_name = $_FILES['student_image']['name'];
+        $file_size = $_FILES['student_image']['size'];
+        $file_tmp = $_FILES['student_image']['tmp_name'];
+        $file_type = $_FILES['student_image']['type'];
+
+
+        $file_ext_array = explode('.', $file_name);
+        $file_ext = strtolower(end($file_ext_array));
+
+
+        $allowed_extensions = array("jpg", "jpeg", "png");
+
+
+        if (in_array($file_ext, $allowed_extensions)) {
+
+            if ($file_size <= 2000000) {
+
+                $image_name = "student_" . time() . "_" . rand(1000, 9999) . "." . $file_ext;
+                $upload_path = "uploads/" . $image_name;
+
+
+                if (move_uploaded_file($file_tmp, $upload_path)) {
+
+                    $get_img_query = "SELECT image FROM students WHERE id='$student_id'";
+                    $img_result = mysqli_query($con, $get_img_query);
+                    $img_data = mysqli_fetch_assoc($img_result);
+
+
+                    if ($img_data['image'] && file_exists("uploads/" . $img_data['image'])) {
+                        unlink("uploads/" . $img_data['image']);
+                    }
+
+
+                    $image_update = ", image='$image_name'";
+                } else {
+                    $res = [
+                        'status' => 422,
+                        'message' => 'Failed to upload image'
+                    ];
+                    echo json_encode($res);
+                    return;
+                }
+            } else {
+                $res = [
+                    'status' => 422,
+                    'message' => 'Image size should be less than 2MB'
+                ];
+                echo json_encode($res);
+                return;
+            }
+        } else {
+            $res = [
+                'status' => 422,
+                'message' => 'Only JPG, JPEG and PNG are allowed'
+            ];
+            echo json_encode($res);
+            return;
+        }
+    }
+
+
+
+
+
+
+
+
+
 
     $name = trim(mysqli_real_escape_string($con, $_POST['name']));
     $email = trim(mysqli_real_escape_string($con, $_POST['email']));
@@ -297,10 +418,9 @@ if (isset($_POST['update_student'])) {
     }
 
 
+    $query = "UPDATE students SET name='$name', email='$email', phone='$phone', course='$course' $image_update 
+          WHERE id='$student_id' and is_deleted = '0'";
 
-
-    $query = "UPDATE students SET name='$name', email='$email', phone='$phone', course='$course' 
-                WHERE id='$student_id' and  is_deleted = '0'";
     $query_run = mysqli_query($con, $query);
 
     if ($query_run) {
